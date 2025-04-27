@@ -22,7 +22,13 @@
     "Themes"
   ],
   "activationEvents": [
-    "*"
+    "onLanguage:html",
+    "onLanguage:xml",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescriptreact",
+    "onLanguage:vue",
+    "onLanguage:svelte",
+    "onLanguage:astro"
   ],
   "main": "./dist/extension.js",
   "contributes": {
