@@ -34,7 +34,7 @@ const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string)
         regex = new RegExp(
             `${commentSetting.startRegExp || commentSetting.start}|${
                 commentSetting.endRegExp || commentSetting.end
-            }|<(\/?)${tagInfo.tagName}(?=\\s|>|$)`,
+            }|<(\/?)${tagInfo.tagName}(?=\\s|\\/>|>|$)`,
             'gm'
         );
     } else {
