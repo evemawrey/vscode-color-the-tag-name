@@ -54,38 +54,51 @@ const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string)
         })
     };
     while (match = regex.exec(src)) {
-        const splited = match[0].split(/[{}"]/);
-        // コメントだったら飛ばす
-        if (match[0] === commentSetting.start) {
-            // コメント開始
-            inComment = true;
-            continue;
-        }
-        if (match[0] === commentSetting.end) {
-            // コメント終了
-            inComment = false;
-            continue;
-        }
-        if (inComment === true) {
-            continue;
-        }
-        let singleLengths = 0;
-        if (splited.length > 2) {
-            splited.forEach(function (single, i) {
-                // 偶数だったら
-                if (i % 2 === 0 && match !== null && tagInfo.decChar !== undefined) {
-                    const startPos = editor.document.positionAt(match.index + singleLengths);
-                    const endPos = editor.document.positionAt(match.index + singleLengths + single.length);
-                    const range = new vscode.Range(startPos, endPos);
-                    tagInfo.decChar.chars.push(range);
-                }
-                singleLengths += single.length + 1;
-            });
-        } else {
-            const startPos = editor.document.positionAt(match.index);
-            const endPos = editor.document.positionAt(match.index + match[0].length);
+        if (onlyColorTagName) {
+            // Only color the tag name itself, not the brackets
+            const slashLength = match[1] ? 1 : 0; // Length of the slash if present
+            const startPos = editor.document.positionAt(
+                match.index + 1 + slashLength
+            ); // +1 for '<'
+            const endPos = editor.document.positionAt(
+                match.index + 1 + slashLength + tagInfo.tagName.length
+            );
             const range = new vscode.Range(startPos, endPos);
             tagInfo.decChar.chars.push(range);
+        } else {
+            const splited = match[0].split(/[{}"]/);
+            // コメントだったら飛ばす
+            if (match[0] === commentSetting.start) {
+                // コメント開始
+                inComment = true;
+                continue;
+            }
+            if (match[0] === commentSetting.end) {
+                // コメント終了
+                inComment = false;
+                continue;
+            }
+            if (inComment === true) {
+                continue;
+            }
+            let singleLengths = 0;
+            if (splited.length > 2) {
+                splited.forEach(function (single, i) {
+                    // 偶数だったら
+                    if (i % 2 === 0 && match !== null && tagInfo.decChar !== undefined) {
+                        const startPos = editor.document.positionAt(match.index + singleLengths);
+                        const endPos = editor.document.positionAt(match.index + singleLengths + single.length);
+                        const range = new vscode.Range(startPos, endPos);
+                        tagInfo.decChar.chars.push(range);
+                    }
+                    singleLengths += single.length + 1;
+                });
+            } else {
+                const startPos = editor.document.positionAt(match.index);
+                const endPos = editor.document.positionAt(match.index + match[0].length);
+                const range = new vscode.Range(startPos, endPos);
+                tagInfo.decChar.chars.push(range);
+            }
         }
     }
     editor.setDecorations(tagInfo.decChar.decorator, tagInfo.decChar.chars);
