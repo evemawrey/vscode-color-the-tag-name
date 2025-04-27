@@ -23,10 +23,28 @@ const clearDecorations = () => {
 const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string) => {
     const commentSetting: CommentSetting = commentSettingMap[editor.document.languageId] || commentSettingMap.default;
 
+    const config = vscode.workspace.getConfiguration('colorTheTagName');
+    const onlyColorTagName = config.get('onlyColorTagName', false);
+
     if (tagInfo.decChar !== undefined) {
         tagInfo.decChar.decorator.dispose();
     }
-    const regex = new RegExp(`${commentSetting.startRegExp || commentSetting.start}|${commentSetting.endRegExp || commentSetting.end}|<(?:/|)${tagInfo.tagName}(?:$|(?:| (?:.*?)[^-?%$])(?<!=)>)`, 'gm');
+    let regex: RegExp;
+    if (onlyColorTagName) {
+        regex = new RegExp(
+            `${commentSetting.startRegExp || commentSetting.start}|${
+                commentSetting.endRegExp || commentSetting.end
+            }|<(\/?)${tagInfo.tagName}(\\s|>|$)`,
+            'gm'
+        );
+    } else {
+        regex = new RegExp(
+            `${commentSetting.startRegExp || commentSetting.start}|${
+                commentSetting.endRegExp || commentSetting.end
+            }|<(?:/|)${tagInfo.tagName}(?:$|(?:| (?:.*?)[^-?%$])(?<!=)>)`,
+            'gm'
+        );
+    }
     let match: RegExpExecArray | null;
     let inComment = false;
     tagInfo.decChar = {
@@ -119,6 +137,17 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeTextDocument(event => {
         decorate();
     }, null, context.subscriptions);
+
+    vscode.workspace.onDidChangeConfiguration(
+        (event) => {
+            if (event.affectsConfiguration('colorTheTagName')) {
+                clearDecorations();
+                decorate();
+            }
+        },
+        null,
+        context.subscriptions
+    );
 
     decorate();
 }

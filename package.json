@@ -1,9 +1,9 @@
 {
-	"name": "color-the-tag-name",
-	"displayName": "Color the tag name（タグに色つけ太郎）",
+  "name": "color-the-tag-name",
+  "displayName": "Color the tag name（タグに色つけ太郎）",
   "description": "This extension will make your html tags colorful, just like my hair. Vue, React Components are also OK.",
   "version": "0.24.0",
-	"publisher": "jzmstrjp",
+  "publisher": "jzmstrjp",
   "license": "MIT",
   "homepage": "https://github.com/jzmstrjp/vscode-color-the-tag-name/blob/main/README.md",
   "bugs": {
@@ -19,13 +19,25 @@
   "icon": "img/icon.png",
   "categories": [
     "Other",
-		"Themes"
+    "Themes"
   ],
   "activationEvents": [
-		"*"
-	],
+    "*"
+  ],
   "main": "./dist/extension.js",
-  "contributes": {},
+  "contributes": {
+    "configuration": {
+      "title": "Color the tag name",
+      "type": "object",
+      "properties": {
+        "colorTheTagName.onlyColorTagName": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set to true to only color the name of the tag"
+        }
+      }
+    }
+  },
   "scripts": {
     "vscode:prepublish": "npm run package",
     "compile": "webpack",
