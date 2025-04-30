@@ -88,15 +88,20 @@ const selectSearchText = (src: string, languageId: string): string => {
             const firstTemplateMatch = src.match(/<template>/);
             const lastTemplateEndMatch = src.match(/<\/template>[^]*$/);
 
-            if (firstTemplateMatch && lastTemplateEndMatch) {
-                const startIndex = firstTemplateMatch.index + '<template>'.length;
-                const endIndex = lastTemplateEndMatch.index;
+            if (
+              firstTemplateMatch &&
+              lastTemplateEndMatch &&
+              firstTemplateMatch.index &&
+              lastTemplateEndMatch.index
+            ) {
+              const startIndex = firstTemplateMatch.index + '<template>'.length;
+              const endIndex = lastTemplateEndMatch.index;
 
-                // Extract everything between the first opening and last closing template tags
-                return src.substring(startIndex, endIndex);
+              // Extract everything between the first opening and last closing template tags
+              return src.substring(startIndex, endIndex);
             } else {
-                // No template or incomplete template, nothing to decorate
-                return '';
+              // No template or incomplete template, nothing to decorate
+              return '';
             }
         }
         default: {
