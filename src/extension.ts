@@ -73,6 +73,32 @@ const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string)
     editor.setDecorations(tagInfo.decChar.decorator, tagInfo.decChar.chars);
 };
 
+/**
+ * Helper to select which part of the source file to search for tags to decorate.
+ * @param {string} src - The source text to filter from.
+ * @param {string} languageId - The language ID of the document.
+ * @returns {string} - The text to be searched for tags to decorate.
+ */
+const selectSearchText = (src: string, languageId: string): string => {
+    switch (languageId) {
+        case 'vue': {
+            // Vue support, currently does not consider jsx/tsx in <script> tags
+            // Look for <template> tags and extract the content inside them
+            const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
+            if (templateMatch) {
+                return templateMatch[1];
+            } else {
+                // No template, nothing to decorate
+                return '';
+            }
+        }
+        default: {
+            // For other languages, use the entire document text
+            return src;
+        }
+    }
+};
+
 const decorate = () => {
     const editor = vscode.window.activeTextEditor;
     if (editor === undefined) {
@@ -82,7 +108,14 @@ const decorate = () => {
         return;
     }
     const src = editor.document.getText();
-    const matches = src.match(/<(?:\/|)([a-zA-Z][a-zA-Z0-9.-]*)(?:$|(?:| (?:.*?)[^-?%$])(?<!=)>)/gm) || [];
+    const searchText = selectSearchText(src, editor.document.languageId);
+    if (searchText === '') {
+        return; // No content to search for tags
+    }
+    const matches =
+      searchText.match(
+        /<(?:\/|)([a-zA-Z][a-zA-Z0-9.-]*)(?:$|(?:| (?:.*?)[^-?%$])(?<!=)>)/gm
+      ) || [];
     const tagNameLikeWords = matches.map((word) => word.replace(/[</>]|(?: .*$)/g, ''));
     const uniqueTagNames = [...new Set(tagNameLikeWords)];
     const themeType = isLightTheme() ? 'light' : 'dark'; // テーマの種類を取得
