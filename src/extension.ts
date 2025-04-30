@@ -20,7 +20,7 @@ const clearDecorations = () => {
     tagInfos = [];
 };
 
-const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string) => {
+const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string, offset: number) => {
     const commentSetting: CommentSetting = commentSettingMap[editor.document.languageId] || commentSettingMap.default;
 
     if (tagInfo.decChar !== undefined) {
@@ -56,16 +56,16 @@ const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string)
             splited.forEach(function (single, i) {
                 // 偶数だったら
                 if (i % 2 === 0 && match !== null && tagInfo.decChar !== undefined) {
-                    const startPos = editor.document.positionAt(match.index + singleLengths);
-                    const endPos = editor.document.positionAt(match.index + singleLengths + single.length);
+                    const startPos = editor.document.positionAt(offset + match.index + singleLengths);
+                    const endPos = editor.document.positionAt(offset + match.index + singleLengths + single.length);
                     const range = new vscode.Range(startPos, endPos);
                     tagInfo.decChar.chars.push(range);
                 }
                 singleLengths += single.length + 1;
             });
         } else {
-            const startPos = editor.document.positionAt(match.index);
-            const endPos = editor.document.positionAt(match.index + match[0].length);
+            const startPos = editor.document.positionAt(offset + match.index);
+            const endPos = editor.document.positionAt(offset + match.index + match[0].length);
             const range = new vscode.Range(startPos, endPos);
             tagInfo.decChar.chars.push(range);
         }
@@ -77,9 +77,9 @@ const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string)
  * Helper to select which part of the source file to search for tags to decorate.
  * @param {string} src - The source text to filter from.
  * @param {string} languageId - The language ID of the document.
- * @returns {string} - The text to be searched for tags to decorate.
+ * @returns {[string, number]} - The text to be searched for tags to decorate, and its offset in the source.
  */
-const selectSearchText = (src: string, languageId: string): string => {
+const selectSearchText = (src: string, languageId: string): [string, number] => {
     switch (languageId) {
         case 'vue': {
             // Vue support, currently does not consider jsx/tsx in <script> tags
@@ -89,15 +89,15 @@ const selectSearchText = (src: string, languageId: string): string => {
             );
 
             if (rootTemplateMatch && rootTemplateMatch[0]) {
-                return rootTemplateMatch[0];
+                return [rootTemplateMatch[0], rootTemplateMatch.index];
             } else {
                 // No template or incomplete template, nothing to decorate
-                return '';
+                return ['', 0];
             }
         }
         default: {
             // For other languages, use the entire document text
-            return src;
+            return [src, 0];
         }
     }
 };
@@ -111,7 +111,7 @@ const decorate = () => {
         return;
     }
     const src = editor.document.getText();
-    const searchText = selectSearchText(src, editor.document.languageId);
+    const [searchText, offset] = selectSearchText(src, editor.document.languageId);
     if (searchText === '') {
         return; // No content to search for tags
     }
@@ -135,7 +135,7 @@ const decorate = () => {
         });
     });
     tagInfos.forEach(function (tagInfo) {
-        decorateInner(tagInfo, editor, src);
+        decorateInner(tagInfo, editor, searchText, offset);
     });
 };
 
