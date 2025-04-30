@@ -88,7 +88,11 @@ const selectSearchText = (src: string, languageId: string): [string, number] => 
                 /<template>([^]*)<\/template>/s
             );
 
-            if (rootTemplateMatch && rootTemplateMatch[0]) {
+            if (
+                rootTemplateMatch &&
+                rootTemplateMatch[0] &&
+                rootTemplateMatch.index
+            ) {
                 return [rootTemplateMatch[0], rootTemplateMatch.index];
             } else {
                 // No template or incomplete template, nothing to decorate
