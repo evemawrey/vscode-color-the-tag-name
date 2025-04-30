@@ -115,35 +115,10 @@ const decorate = () => {
     if (editor.document.fileName.endsWith(".ts")) {
         return;
     }
-    
     const src = editor.document.getText();
-
-    // First, identify comment regions
-    const commentSetting: CommentSetting =
-        commentSettingMap[editor.document.languageId] ||
-        commentSettingMap.default;
-    const commentRegex = new RegExp(
-        `(${commentSetting.startRegExp || commentSetting.start})(.*?)(${
-            commentSetting.endRegExp || commentSetting.end
-        })`,
-        'gs'
-    );
-
-    // Create a copy of the source with comments removed for tag extraction
-    let cleanSrc = src.replace(commentRegex, '');
-
-    // Now extract tags from the clean source
-    const matches =
-        cleanSrc.match(
-            /<(?:\/|)([a-zA-Z][a-zA-Z0-9.-]*)(?:$|(?:| (?:.*?)[^-?%$])(?<!=)>)/gm
-        ) || [];
-
-    const tagNameLikeWords = matches.map((word) =>
-        word.replace(/[</>]|(?: .*$)/g, '')
-    );
+    const matches = src.match(/<(?:\/|)([a-zA-Z][a-zA-Z0-9.-]*)(?:$|(?:| (?:.*?)[^-?%$])(?<!=)>)/gm) || [];
+    const tagNameLikeWords = matches.map((word) => word.replace(/[</>]|(?: .*$)/g, ''));
     const uniqueTagNames = [...new Set(tagNameLikeWords)];
-
-
     const themeType = isLightTheme() ? 'light' : 'dark'; // テーマの種類を取得
     uniqueTagNames.forEach((tagName) => {
         // まだないタグ名の分だけ追加。
