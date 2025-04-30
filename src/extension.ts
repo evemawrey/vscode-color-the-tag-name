@@ -128,12 +128,19 @@ const selectSearchText = (src: string, languageId: string): string => {
   switch (languageId) {
     case 'vue': {
       // Vue support, currently does not consider jsx/tsx in <script> tags
-      // Look for <template> tags and extract the content inside them
-      const templateMatch = src.match(/<template>([\s\S]*?)<\/template>/);
-      if (templateMatch) {
-        return templateMatch[1];
+      // Extract from first <template> to last </template>
+      // Use a two-step approach to find the correct content
+      const firstTemplateMatch = src.match(/<template>/);
+      const lastTemplateEndMatch = src.match(/<\/template>[^]*$/);
+
+      if (firstTemplateMatch && lastTemplateEndMatch) {
+        const startIndex = firstTemplateMatch.index + '<template>'.length;
+        const endIndex = lastTemplateEndMatch.index;
+
+        // Extract everything between the first opening and last closing template tags
+        return src.substring(startIndex, endIndex);
       } else {
-        // No template, nothing to decorate
+        // No template or incomplete template, nothing to decorate
         return '';
       }
     }
