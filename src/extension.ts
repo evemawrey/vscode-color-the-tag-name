@@ -133,7 +133,12 @@ const selectSearchText = (src: string, languageId: string): string => {
       const firstTemplateMatch = src.match(/<template>/);
       const lastTemplateEndMatch = src.match(/<\/template>[^]*$/);
 
-      if (firstTemplateMatch && lastTemplateEndMatch) {
+      if (
+        firstTemplateMatch &&
+        lastTemplateEndMatch &&
+        firstTemplateMatch.index &&
+        lastTemplateEndMatch.index
+      ) {
         const startIndex = firstTemplateMatch.index + '<template>'.length;
         const endIndex = lastTemplateEndMatch.index;
 
