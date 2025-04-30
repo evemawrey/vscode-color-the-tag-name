@@ -91,7 +91,7 @@ const selectSearchText = (src: string, languageId: string): [string, number] => 
             if (
                 rootTemplateMatch &&
                 rootTemplateMatch[0] &&
-                rootTemplateMatch.index
+                rootTemplateMatch.index !== undefined
             ) {
                 return [rootTemplateMatch[0], rootTemplateMatch.index];
             } else {
