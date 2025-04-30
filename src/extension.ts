@@ -20,8 +20,14 @@ const clearDecorations = () => {
   tagInfos = [];
 };
 
-const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string, offset: number) => {
-    const commentSetting: CommentSetting = commentSettingMap[editor.document.languageId] || commentSettingMap.default;
+const decorateInner = (
+  tagInfo: TagInfo,
+  editor: vscode.TextEditor,
+  src: string,
+  offset: number
+) => {
+  const commentSetting: CommentSetting =
+    commentSettingMap[editor.document.languageId] || commentSettingMap.default;
 
   const config = vscode.workspace.getConfiguration('colorTheTagName');
   const onlyColorTagName = config.get('onlyColorTagName', false);
@@ -75,10 +81,10 @@ const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string,
       // Only color the tag name itself, not the brackets
       const slashLength = match[1] ? 1 : 0; // Length of the slash if present
       const startPos = editor.document.positionAt(
-        match.index + 1 + slashLength
+        offset + match.index + 1 + slashLength
       ); // +1 for '<'
       const endPos = editor.document.positionAt(
-        match.index + 1 + slashLength + tagInfo.tagName.length
+        offset + match.index + 1 + slashLength + tagInfo.tagName.length
       );
       const range = new vscode.Range(startPos, endPos);
       tagInfo.decChar.chars.push(range);
@@ -119,27 +125,28 @@ const decorateInner = (tagInfo: TagInfo, editor: vscode.TextEditor, src: string,
  * @param {string} languageId - The language ID of the document.
  * @returns {[string, number]} - The text to be searched for tags to decorate, and its offset in the source.
  */
-const selectSearchText = (src: string, languageId: string): [string, number] => {
-    switch (languageId) {
-        case 'vue': {
-            // Vue support, currently does not consider jsx/tsx in <script> tags
-            // Extract from first <template> to last </template>
-            const rootTemplateMatch = src.match(
-                /<template>([^]*)<\/template>/s
-            );
+const selectSearchText = (
+  src: string,
+  languageId: string
+): [string, number] => {
+  switch (languageId) {
+    case 'vue': {
+      // Vue support, currently does not consider jsx/tsx in <script> tags
+      // Extract from first <template> to last </template>
+      const rootTemplateMatch = src.match(/<template>([^]*)<\/template>/s);
 
-            if (rootTemplateMatch && rootTemplateMatch[0]) {
-                return [rootTemplateMatch[0], rootTemplateMatch.index];
-            } else {
-                // No template or incomplete template, nothing to decorate
-                return ['', 0];
-            }
-        }
-        default: {
-            // For other languages, use the entire document text
-            return [src, 0];
-        }
+      if (rootTemplateMatch && rootTemplateMatch[0]) {
+        return [rootTemplateMatch[0], rootTemplateMatch.index];
+      } else {
+        // No template or incomplete template, nothing to decorate
+        return ['', 0];
+      }
     }
+    default: {
+      // For other languages, use the entire document text
+      return [src, 0];
+    }
+  }
 };
 
 const decorate = () => {
@@ -152,7 +159,10 @@ const decorate = () => {
   }
 
   const src = editor.document.getText();
-  const [searchText, offset] = selectSearchText(src, editor.document.languageId);
+  const [searchText, offset] = selectSearchText(
+    src,
+    editor.document.languageId
+  );
   if (searchText === '') {
     return; // No content to search for tags
   }
